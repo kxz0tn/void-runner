@@ -1,0 +1,614 @@
+/**
+ * VOID RUNNER — Interface
+ * Copyright (c) 2026 VOID RUNNER contributors
+ * SPDX-License-Identifier: MIT
+ *
+ * Holographic monochrome HUD. No color tokens exist in this file.
+ * Geometry is CSS borders and hairline grids; type is system monospace.
+ */
+
+:root {
+  --void: #000000;
+  --ink: #0a0a0a;
+  --line: #ffffff;
+  --dim: rgba(255, 255, 255, 0.22);
+  --mid: rgba(255, 255, 255, 0.45);
+  --ghost: rgba(255, 255, 255, 0.08);
+  --font: "Segoe UI", "Consolas", "SF Mono", "Cascadia Mono", "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--line);
+  font-family: var(--font);
+  cursor: none;
+}
+
+body.menu-open {
+  cursor: default;
+}
+
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+/* CRT / holographic stack sitting above the canvas */
+#fx-scan,
+#fx-vignette,
+#fx-damage,
+#fx-flash {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+#fx-scan {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  mix-blend-mode: overlay;
+  animation: scan-drift 9s linear infinite;
+}
+
+#fx-vignette {
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+}
+
+#fx-damage {
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 255, 255, 0.18) 100%);
+  transition: opacity 80ms linear;
+}
+
+#fx-flash {
+  opacity: 0;
+  background: #fff;
+  mix-blend-mode: overlay;
+}
+
+@keyframes scan-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.frame {
+  position: relative;
+  width: min(920px, calc(100vw - 48px));
+  padding: 48px 56px 40px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.96));
+  box-shadow: 0 0 0 1px #000, 0 0 40px rgba(255, 255, 255, 0.08);
+}
+
+.frame::before,
+.frame::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #fff;
+}
+
+.frame::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.kicker {
+  letter-spacing: 0.55em;
+  font-size: 11px;
+  color: var(--mid);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.logo {
+  position: relative;
+  font-size: clamp(42px, 9vw, 92px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  text-shadow: 2px 0 rgba(255, 255, 255, 0.35), -2px 0 rgba(180, 180, 180, 0.35);
+  animation: logo-flicker 4.8s steps(2, end) infinite;
+}
+
+.logo span {
+  display: block;
+}
+
+.logo .sub {
+  font-size: 0.42em;
+  letter-spacing: 0.46em;
+  margin-top: 10px;
+  opacity: 0.88;
+}
+
+@keyframes logo-flicker {
+  0%,
+  96%,
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  97% {
+    opacity: 0.75;
+    transform: translateX(2px);
+    filter: blur(0.4px);
+  }
+  98% {
+    opacity: 1;
+    transform: translateX(-3px);
+  }
+}
+
+.tag {
+  margin: 22px 0 28px;
+  max-width: 56ch;
+  font-size: 13px;
+  line-height: 1.55;
+  letter-spacing: 0.08em;
+  color: var(--mid);
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  margin-bottom: 26px;
+}
+
+.btn {
+  appearance: none;
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 14px 28px;
+  font: 700 13px/1 var(--font);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 120ms linear, color 120ms linear, transform 80ms linear;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background: #fff;
+  color: #000;
+  outline: none;
+  animation: btn-glitch 220ms steps(2, end) 1;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--mid);
+  border-color: var(--mid);
+}
+
+@keyframes btn-glitch {
+  0% {
+    clip-path: inset(0 0 0 0);
+  }
+  30% {
+    clip-path: inset(20% 0 40% 0);
+    transform: translateX(3px);
+  }
+  60% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translateX(-2px);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 32px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.meta b {
+  display: block;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 4px;
+  letter-spacing: 0.22em;
+}
+
+.controls-legend {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 24px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.controls-legend span {
+  color: #fff;
+}
+
+#boot {
+  z-index: 60;
+  background: #000;
+}
+
+#boot .boot-log {
+  width: min(640px, calc(100vw - 48px));
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mid);
+  line-height: 1.9;
+}
+
+#boot .boot-log .ok {
+  color: #fff;
+}
+
+/* In-run HUD */
+#hud {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+#hud.on {
+  opacity: 1;
+}
+
+.hud-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--mid);
+}
+
+.hud-corner.tl {
+  top: 18px;
+  left: 18px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.hud-corner.tr {
+  top: 18px;
+  right: 18px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.hud-corner.bl {
+  bottom: 18px;
+  left: 18px;
+  border-right: 0;
+  border-top: 0;
+}
+.hud-corner.br {
+  bottom: 18px;
+  right: 18px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.hud-top {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 28px;
+  align-items: flex-end;
+  letter-spacing: 0.28em;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.hud-top .val {
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-left {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  width: 240px;
+}
+
+.hud-right {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--mid);
+  margin-bottom: 5px;
+}
+
+.bar {
+  height: 8px;
+  border: 1px solid var(--mid);
+  padding: 1px;
+  margin-bottom: 10px;
+  background: #000;
+}
+
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  transform-origin: left center;
+  transition: transform 80ms linear;
+}
+
+.bar.hull > i {
+  background: repeating-linear-gradient(90deg, #fff 0 6px, #9a9a9a 6px 7px);
+}
+
+.speed {
+  font-size: 42px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+}
+
+.speed small {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--mid);
+  margin-left: 8px;
+}
+
+.threat {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.threat.hot {
+  color: #fff;
+  animation: pulse 0.7s steps(2, end) infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+#minimap {
+  width: 148px;
+  height: 148px;
+  border: 1px solid var(--mid);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.silhouette {
+  width: 148px;
+  height: 44px;
+}
+
+.cross {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  opacity: 0.35;
+}
+
+.cross::before,
+.cross::after {
+  content: "";
+  position: absolute;
+  background: #fff;
+}
+
+.cross::before {
+  left: 8px;
+  top: 0;
+  width: 1px;
+  height: 18px;
+}
+
+.cross::after {
+  left: 0;
+  top: 8px;
+  width: 18px;
+  height: 1px;
+}
+
+.wave-pip {
+  position: absolute;
+  top: 22px;
+  left: 28px;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.wave-pip b {
+  color: #fff;
+  font-weight: 600;
+}
+
+#toast {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.4em;
+  font-size: 13px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 200ms linear;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 28px;
+  margin: 22px 0 28px;
+}
+
+.stat b {
+  display: block;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: #fff;
+}
+
+.stat span {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.flavor {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  color: var(--mid);
+  max-width: 54ch;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+#error {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  padding: 32px;
+  text-align: center;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#error.show {
+  display: flex;
+}
+
+@media (max-width: 720px) {
+  .frame {
+    padding: 28px 22px;
+  }
+  .meta,
+  .controls-legend,
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .hud-left {
+    width: 46vw;
+  }
+  .hud-right {
+    width: 120px;
+  }
+  #minimap,
+  .silhouette {
+    width: 110px;
+  }
+  #minimap {
+    height: 110px;
+  }
+  .speed {
+    font-size: 28px;
+  }
+}

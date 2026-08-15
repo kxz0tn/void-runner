@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--
+  VOID RUNNER
+  Copyright (c) 2026 VOID RUNNER contributors
+  SPDX-License-Identifier: MIT
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="VOID RUNNER v1.0.0 — original monochrome lunar survival driver. Pilot the VOID HAULER against Void Stalkers." />
+    <title>VOID RUNNER</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="menu-open">
+    <canvas id="gl"></canvas>
+
+    <div id="fx-scan"></div>
+    <div id="fx-vignette"></div>
+    <div id="fx-damage"></div>
+    <div id="fx-flash"></div>
+
+    <div id="boot" class="panel">
+      <div class="boot-log" id="boot-log">
+        <div>VOID RUNNER  v1.0.0  //  COLD START</div>
+      </div>
+    </div>
+
+    <div id="title" class="panel hidden">
+      <div class="frame">
+        <div class="kicker">LUNAR PERIMETER  ·  <span id="ver-tag">v1.0.0</span></div>
+        <h1 class="logo">
+          <span>VOID</span>
+          <span class="sub">RUNNER</span>
+        </h1>
+        <p class="tag">
+          Pilot the VOID HAULER across a generated mare. Void Stalkers hunt in packs.
+          Nothing here is licensed from anywhere else.
+        </p>
+        <div class="row">
+          <button class="btn" id="btn-start" type="button">Initiate Run</button>
+          <button class="btn ghost" id="btn-how" type="button">Protocol</button>
+          <button class="btn ghost" id="btn-fs" type="button">Fullscreen</button>
+        </div>
+        <div class="meta">
+          <div>High Score<b id="hiscore">0</b></div>
+          <div>Platform<b>VOID HAULER</b></div>
+        </div>
+        <div id="how-box" class="controls-legend hidden">
+          <div>Drive <span>WASD / Arrows</span></div>
+          <div>Look <span>Mouse (click to lock)</span></div>
+          <div>Pulse <span>Space / Click / F</span></div>
+          <div>Overdrive <span>Shift (with orb)</span></div>
+          <div>Brake <span>C / reverse</span></div>
+          <div>Pause <span>Esc / P</span></div>
+          <div>Mute <span>M</span></div>
+          <div>Gamepad <span>Stick + A / RT</span></div>
+          <div>Touch <span>Left drive · Right look</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="hud-corner tl"></div>
+      <div class="hud-corner tr"></div>
+      <div class="hud-corner bl"></div>
+      <div class="hud-corner br"></div>
+      <div class="wave-pip">WAVE <b id="hud-wave">1</b> <span id="hud-multi"></span></div>
+      <div class="hud-top">
+        <div>Score<div class="val" id="hud-score">0</div></div>
+        <div>Range<div class="val" id="hud-dist">0 M</div></div>
+        <div>Uptime<div class="val" id="hud-time">00:00</div></div>
+      </div>
+      <div class="cross"></div>
+      <div id="toast"></div>
+      <div class="hud-left">
+        <div class="bar-label"><span>Shield</span><span>Field</span></div>
+        <div class="bar"><i id="bar-shield"></i></div>
+        <div class="bar-label"><span>Hull</span><span>Integrity</span></div>
+        <div class="bar hull"><i id="bar-hull"></i></div>
+        <div class="speed"><span id="hud-speed">0</span><small>KM/H</small></div>
+        <div class="threat" id="hud-threat">QUIET</div>
+      </div>
+      <div class="hud-right">
+        <canvas id="minimap" width="148" height="148"></canvas>
+        <canvas class="silhouette" id="silhouette" width="148" height="44"></canvas>
+      </div>
+    </div>
+
+    <div id="pause" class="panel hidden">
+      <div class="frame">
+        <div class="kicker">HOLD</div>
+        <h1 class="logo"><span>PAUSED</span></h1>
+        <p class="tag">The mare does not pause. The Stalkers do, for now.</p>
+        <div class="row">
+          <button class="btn" id="btn-resume" type="button">Resume</button>
+          <button class="btn ghost" id="btn-restart" type="button">Restart Run</button>
+          <button class="btn ghost" id="btn-menu-pause" type="button">Main Menu</button>
+          <button class="btn ghost" id="btn-mute-pause" type="button">Mute</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="over" class="panel hidden">
+      <div class="frame">
+        <div class="kicker">SIGNAL LOST</div>
+        <h1 class="logo"><span>HULL ZERO</span></h1>
+        <div class="stats">
+          <div class="stat"><span>Score</span><b id="over-score">0</b></div>
+          <div class="stat"><span>Distance</span><b id="over-dist">0 M</b></div>
+          <div class="stat"><span>Time</span><b id="over-time">00:00</b></div>
+          <div class="stat"><span>Stalkers</span><b id="over-kills">0</b></div>
+        </div>
+        <p class="flavor" id="over-flavor"></p>
+        <div class="meta">
+          <div>Best Recorded<b id="over-hiscore">0</b></div>
+          <div>Chassis<b>VOID HAULER</b></div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btn-retry" type="button">Rerun</button>
+          <button class="btn ghost" id="btn-menu" type="button">Surface</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="error"></div>
+
+    <!--
+      Three.js r160.1 UMD (MIT), vendored so the game runs offline.
+      CDN fallback is used only if the local copy is missing.
+    -->
+    <script src="vendor/three.min.js"></script>
+    <script>
+      if (typeof THREE === "undefined") {
+        document.write(
+          '<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"><\/script>'
+        );
+      }
+    </script>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/sky.js"></script>
+    <script src="js/terrain.js"></script>
+    <script src="js/vehicle.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/aliens.js"></script>
+    <script src="js/orbs.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/hazards.js"></script>
+    <script src="js/postfx.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

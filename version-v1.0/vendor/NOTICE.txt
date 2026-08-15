@@ -1,0 +1,4 @@
+Three.js r160.1
+Copyright (c) 2010-2024 three.js authors
+Licensed under the MIT License.
+https://github.com/mrdoob/three.js
