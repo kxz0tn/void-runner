@@ -4,11 +4,13 @@ Monochrome lunar survival driver. Pilot the **VOID HAULER** across a generated m
 
 **v1.0.0** — initial public release.
 
-## Play
+---
 
-[Play VOID RUNNER](https://kxz0tn.github.io/void-runner/version-v1.0/)
+### 🎮 Play Now
 
-Source for this release: [`version-v1.0/`](version-v1.0/)
+**→ [Play VOID RUNNER](https://kxz0tn.github.io/void-runner/version-v1.0/)**
+
+---
 
 ## Controls
 
